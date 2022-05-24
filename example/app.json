@@ -1,0 +1,22 @@
+{
+  "name": "@alantoa/lightbox-example",
+  "displayName": "Lightbox Example",
+  "expo": {
+    "name": "@alantoa/lightbox-example",
+    "slug": "alantoa-lightbox-example",
+    "description": "Example app for @alantoa/lightbox",
+    "privacy": "public",
+    "version": "1.0.0",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ]
+  }
+}
