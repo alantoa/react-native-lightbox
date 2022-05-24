@@ -1,7 +1,3 @@
-# @alantoa/lightbox
-
-@alantoa/lightbox
-
 ## Installation
 
 ```sh
@@ -11,11 +7,30 @@ npm install @alantoa/lightbox
 ## Usage
 
 ```js
-import { multiply } from "@alantoa/lightbox";
+import { LightBoxProvider, LightBox } from '@alantoa/lightbox';
+import { StyleSheet, Image, Dimensions } from 'react-native';
+import * as React from 'react';
 
-// ...
+const { width } = Dimensions.get('window');
 
-const result = await multiply(3, 7);
+export default function App() {
+  return (
+    <LightBoxProvider>
+      <LightBox
+        width={width / 3}
+        height={width / 3}
+        imgLayout={{ width, height: width }}
+      >
+        <Image
+          source={{
+            uri: uri,
+          }}
+          style={StyleSheet.absoluteFillObject}
+        />
+      </LightBox>
+    </LightBoxProvider>
+  );
+}
 ```
 
 ## Contributing
