@@ -1,7 +1,10 @@
+<div align="center">
+  <h1 align="center">React Native Lightbox</h1>
+</div>
 
-<div>
-  <img align="right" width="35%" src="assets/example.gif">
-</div> 
+<div align="center">
+  <img width="300" src="./assets/example.gif" alt="basic usage">
+</div>
 
 ### Installation
 
