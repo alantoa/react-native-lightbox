@@ -1,18 +1,15 @@
-<div align="center">
-  <h1 align="center">React Native Lightbox</h1>
-</div>
 
-<div align="center">
-  <img width="260" height="480" src="./assets/example.gif" alt="basic usage">
-</div>
+<div>
+  <img align="right" width="35%" src="assets/example.gif">
+</div> 
 
-## Installation
+### Installation
 
 ```sh
 npm install @alantoa/lightbox
 ```
 
-## Usage
+### Usage
 
 ```js
 import { LightBoxProvider, LightBox } from '@alantoa/lightbox';
@@ -41,10 +38,10 @@ export default function App() {
 }
 ```
 
-## Contributing
+### Contributing
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
 
-## License
+### License
 
 MIT
