@@ -3,16 +3,16 @@
 </div>
 
 <div align="center">
-  <img width="260" height="480" src="./assets/example.gif" alt="basic usage">
+  <img width="300" src="./assets/example.gif" alt="basic usage">
 </div>
 
-## Installation
+### Installation
 
 ```sh
 npm install @alantoa/lightbox
 ```
 
-## Usage
+### Usage
 
 ```js
 import { LightBoxProvider, LightBox } from '@alantoa/lightbox';
@@ -41,10 +41,10 @@ export default function App() {
 }
 ```
 
-## Contributing
+### Contributing
 
 See the [contributing guide](CONTRIBUTING.md) to learn how to contribute to the repository and the development workflow.
 
-## License
+### License
 
 MIT
