@@ -35,7 +35,7 @@ const AZUKI_IMG_LIST = [
 export default function App() {
   return (
     <LightBoxProvider>
-      <SafeAreaView>
+      <SafeAreaView style={styles.view}>
         <ScrollView contentContainerStyle={styles.container}>
           {AZUKI_IMG_LIST.map((uri, i) => (
             <LightBox
@@ -63,9 +63,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
   },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
+
+  view: {
+    backgroundColor: '#000',
   },
 });
