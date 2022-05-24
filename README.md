@@ -1,3 +1,11 @@
+<div align="center">
+  <h1 align="center">React Native Lightbox</h1>
+</div>
+
+<div align="center">
+  <img width="260" height="480" src="./assets/example.gif" alt="basic usage">
+</div>
+
 ## Installation
 
 ```sh
