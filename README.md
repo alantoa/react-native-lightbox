@@ -4,7 +4,15 @@
 
 <div align="center">
   <img width="300" src="./assets/example.gif" alt="basic usage">
-</div>
+</div> 
+
+### Todo 
+
+- [ ] pinch to zoom 
+- [ ] web support
+- [ ] photo gallery
+- [ ] tap to close
+
 
 ### Installation
 First you have to follow installation instructions of [Reanimated v2](https://docs.swmansion.com/react-native-reanimated/) and [react-native-gesture-handler v2](https://docs.swmansion.com/react-native-gesture-handler/)
