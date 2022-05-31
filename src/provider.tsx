@@ -1,10 +1,16 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import type { ImageStyle } from 'react-native';
-import type { ImageBoundingClientRect, TargetImageInfo } from './light-box';
-
+import type {
+  ImageBoundingClientRect,
+  LightBoxProps,
+  TargetImageInfo,
+} from './light-box';
 import { ActiveImageType, LightImageModal } from './light-box-modal';
 
-export type AnimationParams = {
+export type AnimationParams = Pick<
+  LightBoxProps,
+  'onTap' | 'tapToClose' | 'onLongPress' | 'nativeHeaderHeight'
+> & {
   layout: TargetImageInfo;
   position: ImageBoundingClientRect;
   style?: ImageStyle;
@@ -23,11 +29,12 @@ export const LightBoxProvider: React.FC<{ children: JSX.Element }> = ({
   const [activeImage, setActiveImage] = useState<ActiveImageType | null>(null);
   const value = useMemo(
     () => ({
-      show: ({ layout, position, imageElement }: AnimationParams) => {
+      show: ({ layout, position, imageElement, ...rest }: AnimationParams) => {
         setActiveImage({
           layout,
           imageElement,
-          ...position,
+          position,
+          ...rest,
         });
       },
     }),

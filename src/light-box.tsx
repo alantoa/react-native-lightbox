@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
-import { ViewStyle, StyleProp, Dimensions } from 'react-native';
-
-import { GestureDetector, Gesture } from 'react-native-gesture-handler';
+import { Dimensions, StyleProp, ViewStyle } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   measure,
   runOnJS,
@@ -9,10 +8,8 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
-
 import { AnimationParams, useLightBox } from './provider';
 
-// const AnimatedImage = Animated.createAnimatedComponent(FastImage as any);
 export type ImageBoundingClientRect = {
   x: Animated.SharedValue<number>;
   y: Animated.SharedValue<number>;
@@ -24,21 +21,35 @@ export type TargetImageInfo = {
   width: number;
   height: number;
 };
-export type LightImageProps = {
+export type LightBoxProps = {
   width: number;
   height: number;
   containerStyle?: StyleProp<ViewStyle>;
   imgLayout?: TargetImageInfo;
   alt?: string;
   children: JSX.Element;
+  onLongPress?: () => void;
+  tapToClose?: boolean;
+  onTap?: () => void;
+  /**
+   * This value must be set when you use the Native Header.
+   * e.g.
+   * import { useHeaderHeight } from "@react-navigation/elements";
+   * const headerHeight = useHeaderHeight();
+   */
+  nativeHeaderHeight?: number;
 };
 
-export const LightBox: React.FC<LightImageProps> = ({
+export const LightBox: React.FC<LightBoxProps> = ({
   width: imgWidth,
   height: imgHeight,
   containerStyle,
   imgLayout,
   children,
+  onLongPress,
+  tapToClose = true,
+  onTap,
+  nativeHeaderHeight = 0,
 }) => {
   // Todo: add lightboxImage component.
   const [targetLayout] = useState<AnimationParams['layout'] | null>(null);
@@ -47,8 +58,6 @@ export const LightBox: React.FC<LightImageProps> = ({
   const opacity = useSharedValue(1);
   const lightBox = useLightBox();
 
-  // const headerHeight = useHeaderHeight();
-  const headerHeight = 0;
   const styles = useAnimatedStyle(() => {
     return {
       width: imgWidth,
@@ -73,21 +82,32 @@ export const LightBox: React.FC<LightImageProps> = ({
           height: Dimensions.get('window').width,
         },
       imageElement: children,
+      tapToClose,
+      onTap,
     });
   };
 
-  const gesture = Gesture.Tap().onEnd((_, success) => {
+  const tapGesture = Gesture.Tap().onEnd((_, success) => {
     if (!success) return;
     const measurements = measure(animatedRef);
     width.value = measurements.width;
     height.value = measurements.height;
     x.value = measurements.pageX;
-    y.value = measurements.pageY - headerHeight;
+    y.value = measurements.pageY - nativeHeaderHeight;
     runOnJS(handlePress)();
   });
+  const longPressGesture = Gesture.LongPress()
+    .enabled(!!onLongPress)
+    .maxDistance(10)
+    .onStart(() => {
+      'worklet';
+      if (onLongPress) {
+        runOnJS(onLongPress)();
+      }
+    });
 
   return (
-    <GestureDetector gesture={gesture}>
+    <GestureDetector gesture={Gesture.Race(longPressGesture, tapGesture)}>
       <Animated.View style={containerStyle}>
         <Animated.View ref={animatedRef} style={styles}>
           {children}
