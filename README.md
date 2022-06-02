@@ -7,11 +7,11 @@
 </div> 
 
 ### Todo 
+- [x] tap to close
+- [ ] pinch to zoom (use Reanimated & GestureHandler)
+- [ ] web support (use [photoswipe](https://github.com/dimsemenov/photoswipe) )
+- [ ] photo gallery (use [react-native-pager-view](https://github.com/callstack/react-native-pager-view)
 
-- [ ] pinch to zoom 
-- [ ] web support
-- [ ] photo gallery
-- [ ] tap to close
 
 
 ### Installation
