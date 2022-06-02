@@ -8,9 +8,9 @@
 
 ### Todo 
 - [x] tap to close
-- [ ] pinch to zoom (use Reanimated & GestureHandler)
+- [ ] pinch to zoom (use [Reanimated v2](https://docs.swmansion.com/react-native-reanimated/) & [react-native-gesture-handler v2](https://docs.swmansion.com/react-native-gesture-handler/))
 - [ ] web support (use [photoswipe](https://github.com/dimsemenov/photoswipe) )
-- [ ] photo gallery (use [react-native-pager-view](https://github.com/callstack/react-native-pager-view)
+- [ ] photo gallery (use [react-native-pager-view](https://github.com/callstack/react-native-pager-view))
 
 
 
