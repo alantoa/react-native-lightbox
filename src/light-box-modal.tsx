@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect } from 'react';
 import { BackHandler, StyleSheet, useWindowDimensions } from 'react-native';
-// import { useHeaderHeight } from "@react-navigation/elements";
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Easing,
@@ -13,6 +12,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import type { TargetImageInfo } from './light-box';
 import type { AnimationParams } from './provider';
+import { withRubberBandClamp, useVector } from './utils';
 
 export type ActiveImageType = AnimationParams & {
   layout: TargetImageInfo;
@@ -26,6 +26,7 @@ const timingConfig = {
   duration: 240,
   easing: Easing.bezier(0.33, 0.01, 0, 1),
 };
+const maxScale = 6;
 export const LightImageModal = ({
   activeImage,
   onClose,
@@ -34,7 +35,10 @@ export const LightImageModal = ({
     activeImage;
   const { x, y, width, height, imageOpacity } = position;
   const { width: targetWidth, height: dimensionHeight } = useWindowDimensions();
-
+  const CENTER = {
+    x: targetWidth / 2,
+    y: dimensionHeight / 2,
+  };
   const scaleFactor = layout.width / targetWidth;
 
   const targetHeight = layout.height / scaleFactor;
@@ -45,7 +49,19 @@ export const LightImageModal = ({
   const animationProgress = useSharedValue(0);
 
   const backdropOpacity = useSharedValue(0);
+
+  const offset = useVector(0, 0);
+
   const scale = useSharedValue(1);
+
+  const translation = useVector(0, 0);
+
+  const origin = useVector(0, 0);
+
+  const adjustedFocal = useVector(0, 0);
+
+  // const originalLayout = useVector(width, 0);
+  // const layout = useVector(width, 0);
 
   const targetX = useSharedValue(0);
   const targetY = useSharedValue(
@@ -162,6 +178,15 @@ export const LightImageModal = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+  const setAdjustedFocal = ({
+    focalX,
+    focalY,
+  }: Record<'focalX' | 'focalY', number>) => {
+    'worklet';
+
+    adjustedFocal.x.value = focalX - (CENTER.x + offset.x.value);
+    adjustedFocal.y.value = focalY - (CENTER.y + offset.y.value);
+  };
   const longPressGesture = Gesture.LongPress()
     .enabled(!!onLongPress)
     .maxDistance(10)
@@ -171,8 +196,127 @@ export const LightImageModal = ({
         runOnJS(onLongPress)();
       }
     });
+  const scaleOffset = useSharedValue(1);
+  const resetValues = (animated = true) => {
+    'worklet';
+
+    scale.value = animated ? withTiming(1) : 1;
+    offset.x.value = animated ? withTiming(0) : 0;
+    offset.y.value = animated ? withTiming(0) : 0;
+    translation.x.value = animated ? withTiming(0) : 0;
+    translation.y.value = animated ? withTiming(0) : 0;
+  };
   // Todo: add pinch
-  const pinchGesture = Gesture.Pinch().enabled(false);
+  const pinchGesture = Gesture.Pinch()
+    .onStart(({ focalX, focalY }) => {
+      'worklet';
+      'worklet';
+      offset.x.value = offset.x.value + translation.x.value;
+      offset.y.value = offset.y.value + translation.y.value;
+
+      translation.x.value = 0;
+      translation.y.value = 0;
+      scaleOffset.value = scale.value;
+      setAdjustedFocal({ focalX, focalY });
+      origin.x.value = adjustedFocal.x.value;
+      origin.y.value = adjustedFocal.y.value;
+    })
+    .onUpdate(({ scale: s, focalX, focalY, numberOfPointers }) => {
+      'worklet';
+      if (numberOfPointers !== 2) return;
+
+      const nextScale = withRubberBandClamp(
+        s * scaleOffset.value,
+        0.55,
+        maxScale,
+        [1, maxScale]
+      );
+
+      scale.value = nextScale;
+
+      setAdjustedFocal({ focalX, focalY });
+
+      translation.x.value =
+        adjustedFocal.x.value +
+        ((-1 * nextScale) / scaleOffset.value) * origin.x.value;
+      translation.y.value =
+        adjustedFocal.y.value +
+        ((-1 * nextScale) / scaleOffset.value) * origin.y.value;
+    })
+    .onEnd(() => {
+      'worklet';
+
+      if (scale.value < 1) {
+        resetValues();
+      } else {
+        const sc = Math.min(scale.value, maxScale);
+
+        const newWidth = sc * layout.width;
+        const newHeight = sc * layout.height;
+
+        const nextTransX =
+          scale.value > maxScale
+            ? adjustedFocal.x.value +
+              ((-1 * maxScale) / scaleOffset.value) * origin.x.value
+            : translation.x.value;
+
+        const nextTransY =
+          scale.value > maxScale
+            ? adjustedFocal.y.value +
+              ((-1 * maxScale) / scaleOffset.value) * origin.y.value
+            : translation.y.value;
+
+        const diffX =
+          nextTransX + offset.x.value - (newWidth - width.value) / 2;
+
+        if (scale.value > maxScale) {
+          scale.value = withTiming(maxScale);
+        }
+
+        if (newWidth <= width.value) {
+          translation.x.value = withTiming(0);
+        } else {
+          let moved;
+          if (diffX > 0) {
+            translation.x.value = withTiming(nextTransX - diffX);
+            moved = true;
+          }
+
+          if (newWidth + diffX < width.value) {
+            translation.x.value = withTiming(
+              nextTransX + width.value - (newWidth + diffX)
+            );
+            moved = true;
+          }
+          if (!moved) {
+            translation.x.value = withTiming(nextTransX);
+          }
+        }
+
+        const diffY =
+          nextTransY + offset.y.value - (newHeight - height.value) / 2;
+
+        if (newHeight <= height.value) {
+          translation.y.value = withTiming(-offset.y.value);
+        } else {
+          let moved;
+          if (diffY > 0) {
+            translation.y.value = withTiming(nextTransY - diffY);
+            moved = true;
+          }
+
+          if (newHeight + diffY < height.value) {
+            translation.y.value = withTiming(
+              nextTransY + height.value - (newHeight + diffY)
+            );
+            moved = true;
+          }
+          if (!moved) {
+            translation.y.value = withTiming(nextTransY);
+          }
+        }
+      }
+    });
   // Todo: add double tab
   const doubleTapGesture = Gesture.Tap().numberOfTaps(2).enabled(false);
   const tapGesture = Gesture.Tap()
@@ -199,7 +343,6 @@ export const LightImageModal = ({
     >
       <Animated.View style={StyleSheet.absoluteFillObject}>
         <Animated.View style={[styles.backdrop, backdropStyles]} />
-
         <Animated.View style={imageStyles}>{imageElement}</Animated.View>
       </Animated.View>
     </GestureDetector>

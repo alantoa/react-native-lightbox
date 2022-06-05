@@ -43,6 +43,7 @@ export default function App() {
               height={width / 3}
               imgLayout={{ width, height: width }}
               key={`Avatar-${i}`}
+              tapToClose
             >
               <Image
                 source={{
