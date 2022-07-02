@@ -9,6 +9,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withTiming,
+  cancelAnimation,
 } from 'react-native-reanimated';
 import type { TargetImageInfo } from './light-box';
 import type { AnimationParams } from './provider';
@@ -68,36 +69,53 @@ export const LightImageModal = ({
     (dimensionHeight - targetHeight) / 2 - headerHeight
   );
 
-  const translateX = useSharedValue(0);
-  const translateY = useSharedValue(0);
   const panGesture = Gesture.Pan()
     .maxPointers(1)
     .minPointers(1)
     .minDistance(10)
+
+    .onBegin(() => {
+      const newWidth = scale.value * layout.width;
+      const newHeight = scale.value * layout.height;
+      if (
+        offset.x.value < (newWidth - layout.width) / 2 - translation.x.value &&
+        offset.x.value > -(newWidth - layout.width) / 2 - translation.x.value
+      ) {
+        cancelAnimation(offset.x);
+      }
+
+      if (
+        offset.y.value <
+          (newHeight - layout.height) / 2 - translation.y.value &&
+        offset.y.value > -(newHeight - layout.height) / 2 - translation.y.value
+      ) {
+        cancelAnimation(offset.y);
+      }
+    })
     .onUpdate(({ translationX, translationY }) => {
-      translateX.value = translationX;
-      translateY.value = translationY;
+      translation.x.value = translationX;
+      translation.y.value = translationY;
 
       scale.value = interpolate(
-        translateY.value,
+        translation.y.value,
         [-200, 0, 200],
         [0.65, 1, 0.65],
         Extrapolate.CLAMP
       );
 
       backdropOpacity.value = interpolate(
-        translateY.value,
+        translation.y.value,
         [-100, 0, 100],
         [0.2, 1, 0.2],
         Extrapolate.CLAMP
       );
     })
     .onEnd(() => {
-      if (Math.abs(translateY.value) > 40) {
-        targetX.value = translateX.value - targetX.value * -1;
-        targetY.value = translateY.value - targetY.value * -1;
-        translateX.value = 0;
-        translateY.value = 0;
+      if (Math.abs(translation.y.value) > 40) {
+        targetX.value = translation.x.value - targetX.value * -1;
+        targetY.value = translation.y.value - targetY.value * -1;
+        translation.x.value = 0;
+        translation.y.value = 0;
         animationProgress.value = withTiming(0, timingConfig, () => {
           imageOpacity.value = withTiming(
             1,
@@ -112,8 +130,8 @@ export const LightImageModal = ({
         backdropOpacity.value = withTiming(0, timingConfig);
       } else {
         backdropOpacity.value = withTiming(1, timingConfig);
-        translateX.value = withTiming(0, timingConfig);
-        translateY.value = withTiming(0, timingConfig);
+        translation.x.value = withTiming(0, timingConfig);
+        translation.y.value = withTiming(0, timingConfig);
       }
       scale.value = withTiming(1, timingConfig);
     });
@@ -121,19 +139,25 @@ export const LightImageModal = ({
   const imageStyles = useAnimatedStyle(() => {
     const interpolateProgress = (range: [number, number]) =>
       interpolate(animationProgress.value, [0, 1], range, Extrapolate.CLAMP);
-    const top =
-      translateY.value + interpolateProgress([y.value, targetY.value]);
-    const left =
-      translateX.value + interpolateProgress([x.value, targetX.value]);
+
     return {
-      position: 'absolute',
-      top,
-      left,
       width: interpolateProgress([width.value, targetWidth]),
       height: interpolateProgress([height.value, targetHeight]),
       transform: [
         {
           scale: scale.value,
+        },
+        {
+          translateX:
+            offset.x.value +
+            translation.x.value +
+            interpolateProgress([x.value, targetX.value]),
+        },
+        {
+          translateY:
+            offset.y.value +
+            translation.y.value +
+            interpolateProgress([y.value, targetY.value]),
         },
       ],
     };
@@ -206,16 +230,19 @@ export const LightImageModal = ({
     translation.x.value = animated ? withTiming(0) : 0;
     translation.y.value = animated ? withTiming(0) : 0;
   };
-  // Todo: add pinch
+  const onStart = () => {
+    'worklet';
+
+    offset.x.value = offset.x.value + translation.x.value;
+    offset.y.value = offset.y.value + translation.y.value;
+
+    translation.x.value = 0;
+    translation.y.value = 0;
+  };
   const pinchGesture = Gesture.Pinch()
     .onStart(({ focalX, focalY }) => {
       'worklet';
-      'worklet';
-      offset.x.value = offset.x.value + translation.x.value;
-      offset.y.value = offset.y.value + translation.y.value;
-
-      translation.x.value = 0;
-      translation.y.value = 0;
+      onStart();
       scaleOffset.value = scale.value;
       setAdjustedFocal({ focalX, focalY });
       origin.x.value = adjustedFocal.x.value;
@@ -224,7 +251,6 @@ export const LightImageModal = ({
     .onUpdate(({ scale: s, focalX, focalY, numberOfPointers }) => {
       'worklet';
       if (numberOfPointers !== 2) return;
-
       const nextScale = withRubberBandClamp(
         s * scaleOffset.value,
         0.55,
@@ -245,7 +271,6 @@ export const LightImageModal = ({
     })
     .onEnd(() => {
       'worklet';
-
       if (scale.value < 1) {
         resetValues();
       } else {
@@ -267,13 +292,12 @@ export const LightImageModal = ({
             : translation.y.value;
 
         const diffX =
-          nextTransX + offset.x.value - (newWidth - width.value) / 2;
-
+          nextTransX + offset.x.value - (newWidth - layout.width) / 2;
         if (scale.value > maxScale) {
           scale.value = withTiming(maxScale);
         }
 
-        if (newWidth <= width.value) {
+        if (newWidth <= layout.width) {
           translation.x.value = withTiming(0);
         } else {
           let moved;
@@ -282,9 +306,9 @@ export const LightImageModal = ({
             moved = true;
           }
 
-          if (newWidth + diffX < width.value) {
+          if (newWidth + diffX < layout.width) {
             translation.x.value = withTiming(
-              nextTransX + width.value - (newWidth + diffX)
+              nextTransX + layout.width - (newWidth + diffX)
             );
             moved = true;
           }
@@ -332,25 +356,32 @@ export const LightImageModal = ({
       }
     });
   return (
-    <GestureDetector
-      gesture={Gesture.Race(
-        Gesture.Simultaneous(
-          longPressGesture,
-          Gesture.Race(panGesture, pinchGesture)
-        ),
-        Gesture.Exclusive(doubleTapGesture, tapGesture)
-      )}
-    >
-      <Animated.View style={StyleSheet.absoluteFillObject}>
-        <Animated.View style={[styles.backdrop, backdropStyles]} />
-        <Animated.View style={imageStyles}>{imageElement}</Animated.View>
-      </Animated.View>
-    </GestureDetector>
+    <Animated.View style={StyleSheet.absoluteFillObject}>
+      <Animated.View style={[styles.backdrop, backdropStyles]} />
+      <GestureDetector
+        gesture={Gesture.Race(
+          Gesture.Simultaneous(
+            longPressGesture,
+            Gesture.Race(panGesture, pinchGesture)
+          ),
+          Gesture.Exclusive(doubleTapGesture, tapGesture)
+        )}
+      >
+        <Animated.View style={styles.full}>
+          <Animated.View style={[StyleSheet.absoluteFillObject, imageStyles]}>
+            {imageElement}
+          </Animated.View>
+        </Animated.View>
+      </GestureDetector>
+    </Animated.View>
   );
 };
 const styles = StyleSheet.create({
   backdrop: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'black',
+  },
+  full: {
+    flex: 1,
   },
 });
