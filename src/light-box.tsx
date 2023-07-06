@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Dimensions, StyleProp, ViewStyle } from 'react-native';
+
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   measure,
@@ -8,6 +9,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from 'react-native-reanimated';
+
 import { AnimationParams, useLightBox } from './provider';
 
 export type ImageBoundingClientRect = {
@@ -31,6 +33,7 @@ export type LightBoxProps = {
   onLongPress?: () => void;
   tapToClose?: boolean;
   onTap?: () => void;
+  borderRadius?: number;
   /**
    * This value must be set when you use the Native Header.
    * e.g.
@@ -50,6 +53,7 @@ export const LightBox: React.FC<LightBoxProps> = ({
   tapToClose = true,
   onTap,
   nativeHeaderHeight = 0,
+  borderRadius,
 }) => {
   // Todo: add lightboxImage component.
   const [targetLayout] = useState<AnimationParams['layout'] | null>(null);
@@ -84,16 +88,17 @@ export const LightBox: React.FC<LightBoxProps> = ({
       imageElement: children,
       tapToClose,
       onTap,
+      borderRadius,
     });
   };
 
   const tapGesture = Gesture.Tap().onEnd((_, success) => {
     if (!success) return;
     const measurements = measure(animatedRef);
-    width.value = measurements.width;
-    height.value = measurements.height;
-    x.value = measurements.pageX;
-    y.value = measurements.pageY - nativeHeaderHeight;
+    width.value = measurements!.width;
+    height.value = measurements!.height;
+    x.value = measurements!.pageX;
+    y.value = measurements!.pageY - nativeHeaderHeight;
     runOnJS(handlePress)();
   });
   const longPressGesture = Gesture.LongPress()
@@ -105,8 +110,8 @@ export const LightBox: React.FC<LightBoxProps> = ({
         runOnJS(onLongPress)();
       }
     });
-
   return (
+    //@ts-ignore
     <GestureDetector gesture={Gesture.Race(longPressGesture, tapGesture)}>
       <Animated.View style={containerStyle}>
         <Animated.View ref={animatedRef} style={styles}>

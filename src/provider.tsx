@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import type { ImageStyle } from 'react-native';
+
 import type {
   ImageBoundingClientRect,
   LightBoxProps,
@@ -15,6 +16,7 @@ export type AnimationParams = Pick<
   position: ImageBoundingClientRect;
   style?: ImageStyle;
   imageElement: JSX.Element;
+  borderRadius?: number;
 };
 
 type LightBoxContextType = {
@@ -23,9 +25,9 @@ type LightBoxContextType = {
 
 export const LightBoxContext = createContext<LightBoxContextType | null>(null);
 
-export const LightBoxProvider: React.FC<{
-  children: JSX.Element | JSX.Element[];
-}> = ({ children }) => {
+export const LightBoxProvider: React.FC<{ children: JSX.Element }> = ({
+  children,
+}) => {
   const [activeImage, setActiveImage] = useState<ActiveImageType | null>(null);
   const value = useMemo(
     () => ({
