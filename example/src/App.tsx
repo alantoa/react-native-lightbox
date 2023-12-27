@@ -1,14 +1,12 @@
 import * as React from 'react';
 
-import { LightBox, LightBoxProvider } from '@alantoa/lightbox';
-import {
-  Dimensions,
-  Image,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-} from 'react-native';
+import { LightBox, LightBoxProvider, useLightBox } from '@alantoa/lightbox';
+import { Dimensions, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
 const { width } = Dimensions.get('window');
 
 const AZUKI_IMG_LIST = [
@@ -32,6 +30,41 @@ const AZUKI_IMG_LIST = [
   'https://images.unsplash.com/photo-1702287055981-24272805c309?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDkzfHhIeFlUTUhMZ09jfHxlbnwwfHx8fHw%3D',
 ];
 
+type ImageCellProps = {
+  uri: string;
+  i: number;
+};
+
+const ImageCell = ({ uri, i }: ImageCellProps) => {
+  const { animationProgress } = useLightBox();
+
+  const animatedImageStyle = useAnimatedStyle(() => {
+    return {
+      borderRadius: interpolate(animationProgress.value, [0, 1], [12, 0]),
+    };
+  });
+
+  return (
+    <LightBox
+      width={width / 3}
+      height={width / 3}
+      imgLayout={{ width, height: width }}
+      key={`Avatar-${i}`}
+    >
+      <Animated.Image
+        source={{
+          uri: uri,
+        }}
+        style={[
+          StyleSheet.absoluteFillObject,
+          styles.imageStyle,
+          animatedImageStyle,
+        ]}
+      />
+    </LightBox>
+  );
+};
+
 export default function App() {
   return (
     <GestureHandlerRootView style={styles.view}>
@@ -39,20 +72,7 @@ export default function App() {
         <SafeAreaView style={styles.view}>
           <ScrollView contentContainerStyle={styles.container}>
             {AZUKI_IMG_LIST.map((uri, i) => (
-              <LightBox
-                width={width / 3}
-                height={width / 3}
-                imgLayout={{ width, height: width }}
-                key={`Avatar-${i}`}
-                tapToClose
-              >
-                <Image
-                  source={{
-                    uri: uri,
-                  }}
-                  style={[StyleSheet.absoluteFillObject]}
-                />
-              </LightBox>
+              <ImageCell key={i} {...{ uri, i }} />
             ))}
           </ScrollView>
         </SafeAreaView>
@@ -69,5 +89,10 @@ const styles = StyleSheet.create({
 
   view: {
     flex: 1,
+  },
+
+  imageStyle: {
+    borderRadius: 12,
+    overflow: 'hidden',
   },
 });
