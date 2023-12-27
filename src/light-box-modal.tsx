@@ -12,7 +12,7 @@ import Animated, {
   cancelAnimation,
 } from 'react-native-reanimated';
 import type { TargetImageInfo } from './light-box';
-import type { AnimationParams } from './provider';
+import { useLightBox, type AnimationParams } from './provider';
 import { withRubberBandClamp, useVector } from './utils';
 
 export type ActiveImageType = AnimationParams & {
@@ -47,7 +47,7 @@ export const LightImageModal = ({
   // const headerHeight = useHeaderHeight();
   const headerHeight = 0;
 
-  const animationProgress = useSharedValue(0);
+  const { animationProgress } = useLightBox();
 
   const backdropOpacity = useSharedValue(0);
 
