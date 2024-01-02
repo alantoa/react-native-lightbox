@@ -1,6 +1,6 @@
 {
   "name": "rn-lightbox-v2",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "This package is a forked repo of Alantoa's Lightbox Implementation",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
