@@ -1,7 +1,7 @@
 {
-  "name": "@alantoa/lightbox",
-  "version": "0.2.0",
-  "description": "@alantoa/lightbox",
+  "name": "rn-lightbox-v2",
+  "version": "0.0.1",
+  "description": "This package is a forked repo of Alantoa's Lightbox Implementation",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
   "types": "lib/typescript/index.d.ts",
@@ -36,13 +36,13 @@
     "ios",
     "android"
   ],
-  "repository": "https://github.com/alantoa/react-native-lightbox",
-  "author": "alantoa <toacncom@gmail.com> (https://github.com/alantoa)",
+  "repository": "https://github.com/timelessco/react-native-lightbox",
+  "author": "alantoa <toacncom@gmail.com> (https://github.com/alantoa) | Timeless <hell@timeless.co> (https://github.com/timelessco)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/alantoa/react-native-lightbox/issues"
+    "url": "https://github.com/timelessco/react-native-lightbox/issues"
   },
-  "homepage": "https://github.com/alantoa/react-native-lightbox#readme",
+  "homepage": "https://github.com/timelessco/react-native-lightbox#readme",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
