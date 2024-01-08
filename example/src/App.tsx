@@ -1,61 +1,83 @@
 import * as React from 'react';
 
-import {
-  StyleSheet,
-  Image,
-  Dimensions,
-  ScrollView,
-  SafeAreaView,
-} from 'react-native';
-import { LightBoxProvider, LightBox } from '@alantoa/lightbox';
+import { LightBox, LightBoxProvider, useLightBox } from '@alantoa/lightbox';
+import { Dimensions, SafeAreaView, ScrollView, StyleSheet } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, {
+  interpolate,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
 const { width } = Dimensions.get('window');
 
 const AZUKI_IMG_LIST = [
-  'https://img.seadn.io/files/d05fb012462088b91b5a36ad94a6a67c.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/e104c3f1ec179c89ceeb15794b1b3675.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/c75da5ff379261d1a24a5b424a5b96b8.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/aeef6c7096c02f7b14f77a98e048ff26.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/e6e736b065c46d3b3e463f11809b1a23.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/194e68ea3e146c96515a9b3c5ab1b6be.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/b16b55d319d45b80d8519f31abc39118.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/2fceb1d771a6c61f495815b8eff1b708.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/b96eef33fb84dbd13880ab4d34cf8688.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/ead83b79ef9823b3eafe17f844ce15c3.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/5e39b31799644619cf052027d012e269.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/580a0b9d5ba3d12e5d27a3e5f429d49c.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/3b2070293e7fe5344d3b4e273ccfb6e4.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/963f1081c50fa0962062eade7710fcc4.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/7d5b53a74200e437d150e18c44c20d41.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/8efd252af1d76eaee2f1eafe4fd98ebd.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/a315d2b9c0ae5a321d1c0c936674fcfc.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/4a487488ff95c14d3dada736e5238594.png?auto=format&h=720&w=720',
-  'https://img.seadn.io/files/90632eddf80a9705e84638209e437d42.png?auto=format&h=720&w=720',
+  'https://plus.unsplash.com/premium_photo-1679470310712-82c0a39cd41d?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDEwNXx4SHhZVE1ITGdPY3x8ZW58MHx8fHx8',
+  'https://images.unsplash.com/photo-1698681908648-962c6048ec3e?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDEyfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D',
+  'https://images.unsplash.com/photo-1658963654546-593c6ea57ce4?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDIyfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D',
+  'https://images.unsplash.com/photo-1698584200770-3838c3690a27?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDQyfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D',
+  'https://images.unsplash.com/photo-1619992525255-3bed3879b0d6?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDYyfENEd3V3WEpBYkV3fHxlbnwwfHx8fHw%3D',
+  'https://images.unsplash.com/photo-1703343872540-af08e5a6d703?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDE5fHhIeFlUTUhMZ09jfHxlbnwwfHx8fHw%3D',
+  'https://images.unsplash.com/photo-1699514886400-3df192033292?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDMyOHxKcGc2S2lkbC1Ia3x8ZW58MHx8fHx8',
+  'https://plus.unsplash.com/premium_photo-1661808819761-878bc1a39dee?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDI1MnxKcGc2S2lkbC1Ia3x8ZW58MHx8fHx8',
+  'https://plus.unsplash.com/premium_photo-1666612440466-25089c980bfd?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDIzN3xKcGc2S2lkbC1Ia3x8ZW58MHx8fHx8',
+  'https://images.unsplash.com/photo-1699111259952-47e5c8e8727f?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDE2MnxKcGc2S2lkbC1Ia3x8ZW58MHx8fHx8',
+  'https://images.unsplash.com/photo-1694875464862-978a879a1210?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDkyfEpwZzZLaWRsLUhrfHxlbnwwfHx8fHw%3D',
+  'https://images.unsplash.com/photo-1700413473936-81b281f88715?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDgxfEpwZzZLaWRsLUhrfHxlbnwwfHx8fHw%3D',
+  'https://images.unsplash.com/photo-1624981015247-697f0b9e24a2?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDU2fEpwZzZLaWRsLUhrfHxlbnwwfHx8fHw%3D',
+  'https://images.unsplash.com/photo-1551085036-92c80da2bf4a?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDI0fEpwZzZLaWRsLUhrfHxlbnwwfHx8fHw%3D',
+  'https://images.unsplash.com/photo-1534757889788-2aea3517f2ef?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDV8SnBnNktpZGwtSGt8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1547471080-19acba333038?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDR8SnBnNktpZGwtSGt8fGVufDB8fHx8fA%3D%3D',
+  'https://images.unsplash.com/photo-1702877511807-2cb45e74e0fe?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDYxfHhIeFlUTUhMZ09jfHxlbnwwfHx8fHw%3D',
+  'https://images.unsplash.com/photo-1702287055981-24272805c309?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHx0b3BpYy1mZWVkfDkzfHhIeFlUTUhMZ09jfHxlbnwwfHx8fHw%3D',
 ];
+
+type ImageCellProps = {
+  uri: string;
+  i: number;
+};
+
+const ImageCell = ({ uri, i }: ImageCellProps) => {
+  const { animationProgress } = useLightBox();
+
+  const animatedImageStyle = useAnimatedStyle(() => {
+    return {
+      borderRadius: interpolate(animationProgress.value, [0, 1], [12, 0]),
+    };
+  });
+
+  return (
+    <LightBox
+      width={width / 3}
+      height={width / 3}
+      imgLayout={{ width, height: width }}
+      key={`Avatar-${i}`}
+    >
+      <Animated.Image
+        source={{
+          uri: uri,
+        }}
+        style={[
+          StyleSheet.absoluteFillObject,
+          styles.imageStyle,
+          animatedImageStyle,
+        ]}
+      />
+    </LightBox>
+  );
+};
 
 export default function App() {
   return (
-    <LightBoxProvider>
-      <SafeAreaView style={styles.view}>
-        <ScrollView contentContainerStyle={styles.container}>
-          {AZUKI_IMG_LIST.map((uri, i) => (
-            <LightBox
-              width={width / 3}
-              height={width / 3}
-              imgLayout={{ width, height: width }}
-              key={`Avatar-${i}`}
-              tapToClose
-            >
-              <Image
-                source={{
-                  uri: uri,
-                }}
-                style={StyleSheet.absoluteFillObject}
-              />
-            </LightBox>
-          ))}
-        </ScrollView>
-      </SafeAreaView>
-    </LightBoxProvider>
+    <GestureHandlerRootView style={styles.view}>
+      <LightBoxProvider>
+        <SafeAreaView style={styles.view}>
+          <ScrollView contentContainerStyle={styles.container}>
+            {AZUKI_IMG_LIST.map((uri, i) => (
+              <ImageCell key={i} {...{ uri, i }} />
+            ))}
+          </ScrollView>
+        </SafeAreaView>
+      </LightBoxProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -66,6 +88,11 @@ const styles = StyleSheet.create({
   },
 
   view: {
-    backgroundColor: '#000',
+    flex: 1,
+  },
+
+  imageStyle: {
+    borderRadius: 12,
+    overflow: 'hidden',
   },
 });

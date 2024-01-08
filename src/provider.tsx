@@ -6,6 +6,7 @@ import type {
   TargetImageInfo,
 } from './light-box';
 import { ActiveImageType, LightImageModal } from './light-box-modal';
+import { useSharedValue, type SharedValue } from 'react-native-reanimated';
 
 export type AnimationParams = Pick<
   LightBoxProps,
@@ -19,16 +20,22 @@ export type AnimationParams = Pick<
 
 type LightBoxContextType = {
   show: (params: AnimationParams) => void;
+  animationProgress: SharedValue<number>;
 };
 
-export const LightBoxContext = createContext<LightBoxContextType | null>(null);
+export const LightBoxContext = createContext<LightBoxContextType | undefined>(
+  undefined
+);
 
-export const LightBoxProvider: React.FC<{
+const LightBoxProvider: React.FC<{
   children: JSX.Element | JSX.Element[];
 }> = ({ children }) => {
+  const animationProgress = useSharedValue<number>(0);
+
   const [activeImage, setActiveImage] = useState<ActiveImageType | null>(null);
   const value = useMemo(
     () => ({
+      animationProgress,
       show: ({ layout, position, imageElement, ...rest }: AnimationParams) => {
         setActiveImage({
           layout,
@@ -38,6 +45,7 @@ export const LightBoxProvider: React.FC<{
         });
       },
     }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     []
   );
 
@@ -54,10 +62,14 @@ export const LightBoxProvider: React.FC<{
   );
 };
 
-export const useLightBox = () => {
+const useLightBox = (): LightBoxContextType => {
   const lightBox = useContext(LightBoxContext);
   if (!lightBox) {
-    console.error('Trying to use useLightBox without a LightBoxProvider');
+    throw new Error(
+      'LightBoxContext: `LightBoxContext` is undefined. Seems you forgot to wrap component within the CalendarProvider'
+    );
   }
   return lightBox;
 };
+
+export { useLightBox, LightBoxProvider };
