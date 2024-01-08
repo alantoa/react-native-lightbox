@@ -1,6 +1,6 @@
 {
   "name": "@alantoa/lightbox",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "@alantoa/lightbox",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",
