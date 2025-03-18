@@ -1,8 +1,8 @@
 ## ⚠️ This package is no longer maintained
 
-This repository is no longer actively maintained. If you are looking for a more performant solution with an improved API, please check out [galeria](https://github.com/nandorojo/galeria).
+This repository is no longer actively maintained. If you are looking for a more performant solution with an improved API, please check out [**galeria**](https://github.com/nandorojo/galeria).
 
-The galeria package provides better performance and enhanced features, making it a great alternative to continue your project.
+The **[galeria](https://github.com/nandorojo/galeria)** package provides better performance and enhanced features, making it a great alternative to continue your project.
 
 Thank you for your support!
 
